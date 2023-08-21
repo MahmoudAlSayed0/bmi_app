@@ -1,5 +1,9 @@
+import 'dart:math';
+
+import 'package:bmi_app/result_screen.dart';
 import 'package:flutter/material.dart';
 import 'colors.dart';
+import 'package:bmi_app/info.dart';
 
 class Home_screen extends StatefulWidget {
   const Home_screen({
@@ -37,34 +41,34 @@ class _Home_screenState extends State<Home_screen> {
                       Expanded(
                         child: GestureDetector(
                           onTap: () => setState(() {
-                            isMale = true;
+                            info.isMale = true;
                           }),
                           child: gender(
                             context,
                             text: 'male',
-                            male: isMale,
+                            male: info.isMale,
                           ),
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 24,
                       ),
                       Expanded(
                         child: GestureDetector(
                           onTap: () => setState(() {
-                            isMale = false;
+                            info.isMale = false;
                           }),
                           child: gender(
                             context,
                             text: 'female',
-                            male: isMale,
+                            male: info.isMale,
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 24,
                 ),
                 Expanded(
@@ -77,7 +81,7 @@ class _Home_screenState extends State<Home_screen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Height is: $height',
+                        'Height is: ${info.height}',
                         style: const TextStyle(
                           color: myprimary,
                           fontSize: 32,
@@ -85,10 +89,11 @@ class _Home_screenState extends State<Home_screen> {
                         ),
                       ),
                       Slider(
-                        value: height.toDouble(),
+                        thumbColor: myprimary,
+                        value: info.height.toDouble(),
                         onChanged: (value) {
                           setState(() {
-                            height = value.round();
+                            info.height = value.round();
                           });
                         },
                         max: 220,
@@ -97,7 +102,7 @@ class _Home_screenState extends State<Home_screen> {
                     ],
                   ),
                 )),
-                SizedBox(
+                const SizedBox(
                   height: 24,
                 ),
                 Expanded(
@@ -105,7 +110,7 @@ class _Home_screenState extends State<Home_screen> {
                     Expanded(
                         child:
                             adjustValue(context, info: info, valueName: 'age')),
-                    SizedBox(
+                    const SizedBox(
                       width: 24,
                     ),
                     Expanded(
@@ -113,14 +118,23 @@ class _Home_screenState extends State<Home_screen> {
                             info: info, valueName: 'weight')),
                   ]),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 24,
                 ),
                 MaterialButton(
                   color: Colors.white,
                   minWidth: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  onPressed: () {},
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  onPressed: () {
+                    setState(() {
+                      info.result = (info.weight / pow(info.height / 100, 2))
+                          .toStringAsFixed(1);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Result(info)));
+                    });
+                  },
                   textColor: myprimary,
                   child: const Text(
                     'Calculate',
@@ -193,20 +207,27 @@ class _Home_screenState extends State<Home_screen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FloatingActionButton(
+                heroTag: 'Decreasing $valueName',
                 onPressed: () {
-                  setState(
-                      () => valueName == 'age' ? info.age-- : info.weight--);
+                  setState(() => valueName == 'age'
+                      ? info.age > 0
+                          ? info.age--
+                          : info.age = 0
+                      : info.weight > 0
+                          ? info.weight--
+                          : info.weight = 0);
                 },
                 mini: true,
-                child: Icon(Icons.remove),
+                child: const Icon(Icons.remove),
               ),
               FloatingActionButton(
+                heroTag: 'Increasing $valueName',
                 onPressed: () {
                   setState(
                       () => valueName == 'age' ? info.age++ : info.weight++);
                 },
                 mini: true,
-                child: Icon(Icons.add),
+                child: const Icon(Icons.add),
               ),
             ],
           ),
@@ -214,12 +235,4 @@ class _Home_screenState extends State<Home_screen> {
       ),
     );
   }
-}
-
-class Info {
-  bool isMale;
-  int height;
-  int age;
-  int weight;
-  Info(this.isMale, this.height, this.age, this.weight);
 }
